@@ -28,7 +28,7 @@ class FileSystem(BasePersistentStorage):
         """ Create any missing folders from the root path """
         if(self.options.get('create_missing', False)):
             #os.makedirs(self.base_path.resolve())
-            self.base_path.mkdir(exist_ok=True)
+            self.base_path.mkdir(parents=True, exist_ok=True)
 
     async def _aget_files(self, path: str = None) -> List[File]:
         """ 

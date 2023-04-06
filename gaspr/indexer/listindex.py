@@ -19,6 +19,8 @@ class ListIndexer(BaseIndexer):
                  storage: BasePersistentStorage,
                  **kwargs: Any) -> None:
         super().__init__(llm, storage, index_name="index_list.json", **kwargs)
+        self.index:GPTListIndex = None
+
         self.__validate_params__()
 
     def __validate_params__(self):

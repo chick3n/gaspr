@@ -3,7 +3,7 @@ from gaspr.persistent.base import BasePersistentStorage
 from gaspr.llms.base import BaseLlm
 from gaspr.indexer.models import LlamaIndexResponse, LlamaIndexRefresh
 from gaspr.persistent.models import File
-from llama_index import GPTSimpleVectorIndex, Document
+from llama_index.indices.base import BaseGPTIndex, Document
 from typing import Any
 
 class BaseIndexer(ABC):
@@ -21,7 +21,7 @@ class BaseIndexer(ABC):
         self.storage = storage
         self.index_name = kwargs.get('index_name', 'index.json')
         self.use_saved_index = kwargs.get('use_saved_index', True)
-        self.index = None
+        self.index:BaseGPTIndex = None
         self.index_init = False
         self.index_folder = kwargs.get('index_folder', 'indices')
     
@@ -84,3 +84,13 @@ class BaseIndexer(ABC):
         self._fail_on_init()
 
         await self.storage._adelete_file(self.index_name)
+
+    async def aadd_file(self, file:File, overwrite:bool=True) -> str:
+        await self.storage._aupload_file(file, overwrite=overwrite)
+        document = Document(file.content)
+        self.index.insert(document=document)
+        return document.get_doc_id()
+
+    async def aremove_file(self, filename:str, doc_id:str = None) -> None:
+        await self.storage._adelete_file(filename)
+        self.index.delete(doc_id or filename)

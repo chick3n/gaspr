@@ -19,6 +19,7 @@ class VectorIndexer(BaseIndexer):
                  storage: BasePersistentStorage,
                  **kwargs: Any) -> None:
         super().__init__(llm, storage, index_name="index_vector.json", **kwargs)
+        self.index:GPTSimpleVectorIndex = None
         self.__validate_params__()
 
     def __validate_params__(self):
