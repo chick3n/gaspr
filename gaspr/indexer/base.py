@@ -34,6 +34,10 @@ class BaseIndexer(ABC):
         await self.initialize()
         return self
     
+    @property
+    def _storage(self) -> BasePersistentStorage:
+        return self.storage
+    
     @abstractmethod
     async def initialize(self) -> None:
         pass

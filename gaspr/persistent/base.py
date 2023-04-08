@@ -17,6 +17,11 @@ class BasePersistentStorage(metaclass=abc.ABCMeta):
         """ async delete file from location """
 
     @abc.abstractmethod
+    async def _aupload_file_content(self, filename:str, content:str, path: str = None, overwrite: bool = True) -> None:
+        """ upload file to location """
+        pass
+
+    @abc.abstractmethod
     async def _aupload_file(self, file: File, path: str = None, overwrite: bool = True) -> None:
         """ upload file to location """
         pass

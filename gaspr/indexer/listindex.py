@@ -5,6 +5,7 @@ from gaspr.indexer.base import BaseIndexer
 from gaspr.persistent.models import File
 from llama_index import GPTListIndex, Document, QueryMode
 from typing import Any
+import logging
 
 class ListIndexer(BaseIndexer):
     """
@@ -20,6 +21,7 @@ class ListIndexer(BaseIndexer):
                  **kwargs: Any) -> None:
         super().__init__(llm, storage, index_name="index_list.json", **kwargs)
         self.index:GPTListIndex = None
+        self.logger = logging.getLogger('ListIndexer')
 
         self.__validate_params__()
 
@@ -41,7 +43,9 @@ class ListIndexer(BaseIndexer):
                                                                    service_context=self.llm.get_servicecontext())
         
         if self.index is None:
+            self.logger.info(f'Loading files into list indexer.')
             documents = await self.storage._aget_files()
+            self.logger.info(f'{len(documents)} files found at {self.storage.base_path}.')
             idocuments = [Document(document.content) for document in documents if not document.name == self.index_name]
             self.index = GPTListIndex.from_documents(idocuments, service_context=self.llm.get_servicecontext())           
 
@@ -50,9 +54,12 @@ class ListIndexer(BaseIndexer):
     def query(self, prompt: str, **kwargs: Any) -> LlamaIndexResponse:
         self._fail_on_init()
 
+        
         if kwargs.get('summarize', False):
+            self.logger.info(f'Sending summary prompt {prompt[:100]}')
             return self.__sumquery(prompt, **kwargs)
         
+        self.logger.info(f'Sending prompt {prompt[:100]}')
         response = self.index.query(prompt)
         return LlamaIndexResponse(text=str(response)) 
 

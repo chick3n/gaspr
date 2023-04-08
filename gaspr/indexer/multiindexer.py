@@ -1,7 +1,7 @@
 from gaspr.indexer.base import BaseIndexer
 from gaspr.indexer import ListIndexer, VectorIndexer
 from gaspr.persistent import File
-from typing import Any
+from typing import Any, overload
 import asyncio
 import uuid
 
@@ -19,15 +19,16 @@ class MultiIndexer():
             await indexer.initialize()
 
     @property
-    def get_index(self, key:str) -> BaseIndexer:
-        if key in self.indices:
-            return self.indices[key]
-        
-        raise ValueError(f'{str(key)} index does not exist.')
+    def index(self) -> dict[str,BaseIndexer]:
+        return self.indices
 
+    async def ainsert_file_string(self, filename:str, content:str, **kwargs) -> None:
+        """Add file to all indexes """
+        await self.ainsert_file(File(filename, content), **kwargs)
+        
     async def ainsert_file(self, file:File, **kwargs) -> None:
         """Add this file to all indexes"""
-        overwrite = kwargs.get('overwrite', True)
+        overwrite = kwargs.get('overwrite', False) # assume storage is same on all indices
 
         for _, indexer in self.indices.items():
             await indexer.aadd_file(file, overwrite=overwrite)

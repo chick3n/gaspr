@@ -37,6 +37,8 @@ class FileSystem(BasePersistentStorage):
             path (str): path to the files from the base path
         """
         full_path = self.base_path.joinpath(path or '')
+        if not full_path.resolve().exists():
+            return []
         pathlist = full_path.glob("*")
         files:List[File] = []
 
@@ -61,6 +63,16 @@ class FileSystem(BasePersistentStorage):
         full_path = self.base_path.joinpath(path or '', filename)
         if(full_path.exists() and os.path.isfile(full_path.resolve())):
             os.remove(full_path.resolve())
+
+    async def _aupload_file_content(self, filename:str, content:str, path: str = None, overwrite: bool = True) -> None:
+        """ 
+        upload file to location 
+        Args:
+            file (File): file object for writing to filesystem
+            path? (str): path within base_path if any
+            overwrite? (bool): overwrite the file if it exists
+        """
+        await self._aupload_file(File(filename, content), path, overwrite)
 
     async def _aupload_file(self, file: File, path: str = None, overwrite: bool = True) -> None:
         """ 
